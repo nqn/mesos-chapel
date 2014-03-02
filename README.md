@@ -1,4 +1,3 @@
-Cray Chapel scheduler for Apache Mesos
+Cray Chapel Mesos scheduler
 ========
-
 
