@@ -25,6 +25,9 @@ examples: check_proto_headers check_mesos protos c-bridge
 	go install mesos.apache.org/example_framework
 	go install mesos.apache.org/example_executor
 
+pack:
+	tar -cvzf chapel-bootstrap.tgz bin/chapel-agent
+
 clean:
 	@cd c-bridge; make clean
 	go clean

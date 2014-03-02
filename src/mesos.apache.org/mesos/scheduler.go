@@ -54,15 +54,27 @@ import (
 )
 
 func ScalarResource(name string, value float64) *Resource {
- return &Resource {
-   Name:   proto.String(name),
-   Type:   Value_SCALAR.Enum(),
-   Scalar: Scalar(value),
- }
+  return &Resource {
+    Name:   proto.String(name),
+    Type:   Value_SCALAR.Enum(),
+    Scalar: Scalar(value),
+  }
 }
 
 func Scalar(val float64) *Value_Scalar {
   return &Value_Scalar { Value: &val }
+}
+
+func RangeResource(name string, begin uint64, end uint64) *Resource {
+  return &Resource {
+    Name:   proto.String(name),
+    Type:   Value_RANGES.Enum(),
+    Ranges: NewRange(begin, end),
+  }
+}
+
+func NewRange(begin uint64, end uint64) *Value_Ranges {
+  return &Value_Ranges { Range: []*Value_Range { &Value_Range { Begin: &begin, End: &end } } }
 }
 
 type SchedulerRegisteredFunc       func (*SchedulerDriver, FrameworkID, MasterInfo)
