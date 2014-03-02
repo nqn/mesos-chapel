@@ -16,6 +16,14 @@ Then log into one of the master nodes.
 
     $ sudo aptitude install make g++ libprotobuf-dev mercurial golang mpich2
 
+### Install Chapel scheduler
+
+    $ wget https://github.com/nqn/mesos-chapel/archive/master.zip
+    $ unzip master
+    $ cd mesos-chapel-master
+    $ export GOPATH=`pwd`
+    $ make
+
 ### Install Cray Chapel
 
     $ wget http://gasnet.lbl.gov/GASNet-1.22.0.tar.gz
@@ -36,25 +44,19 @@ Then log into one of the master nodes.
 
     $ cd examples/programs
     $ chpl jacobi.chpl -o jacobi
-    $ cp jacobi ~/
-    $ cp jacobi_real ~/
+    $ cp jacobi ~/mesos-chapel-master/
+    $ cp jacobi_real ~/mesos-chapel-master/
     $ cd
-
-### Install Chapel scheduler
-
-    $ wget https://github.com/nqn/mesos-chapel/archive/master.zip
-    $ unzip master
-    $ cd mesos-chapel-master
-    $ export GOPATH=`pwd`
-    $ make
     
 ### Upload assets to HDFS
 
+    $ cd mesos-chapel-master
     $ hadoop fs -mkdir hdfs://54.211.128.164/chapel/
-    $ hadoop fs -put mesos-chapel-master/chapel-bootstrap.tgz hdfs://54.211.128.164/chapel/chapel-bootstrap.tgz
+    $ hadoop fs -put chapel-bootstrap.tgz hdfs://54.211.128.164/chapel/chapel-bootstrap.tgz
+    $ hadoop fs -put jacobi_real hdfs://54.211.128.164/chapel/jacobi_real
 
 ### Run sample program
 
-    $ ./mesos-chapel-master/bin/chapel -master ec2-54-81-226-236.compute-1.amazonaws.com:5050 -bootstrap hdfs://54.211.128.164/chapel/chapel-bootstrap.tgz ./jacobi
+    $ ./bin/chapel -master ec2-54-81-226-236.compute-1.amazonaws.com:5050 -bootstrap hdfs://54.211.128.164/chapel/chapel-bootstrap.tgz ./jacobi
     
     
