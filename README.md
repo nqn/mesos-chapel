@@ -57,6 +57,14 @@ Then log into one of the master nodes.
 
 ### Run sample program
 
-    $ ./bin/chapel -master ec2-54-81-226-236.compute-1.amazonaws.com:5050 -bootstrap hdfs://54.211.128.164/chapel/chapel-bootstrap.tgz ./jacobi
+    $ ./bin/chapel -master ec2-54-81-226-236.compute-1.amazonaws.com:5050 -name-node hdfs://54.211.128.164 -locales 3 ./jacobi
+    I0303 01:03:45.841869  4199 sched.cpp:218] No credentials provided. Attempting to register without authentication
+    I0303 01:03:45.842119  4199 sched.cpp:230] Detecting new master
+    [ 1 / 3 ] Setting up locale..
+    [ 2 / 3 ] Setting up locale..
+    [ 3 / 3 ] Setting up locale..
+    Jacobi computation complete.
+    Delta is 9.92124e-06 (< epsilon = 1e-05)
+    # of iterations: 60
     
     
