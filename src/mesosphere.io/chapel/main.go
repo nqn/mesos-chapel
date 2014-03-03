@@ -10,19 +10,25 @@ import (
     "io"
     "os/exec"
     "strings"
+    "time"
     "mesos.apache.org/mesos"
     "code.google.com/p/goprotobuf/proto"
 )
 
 func triggerAgents(chapel_program []string, agents map[string]uint64) {
+  time.Sleep(2 * time.Second)
+
   f, err := ioutil.TempFile("/tmp", "chapel")
   if err != nil {
     log.Fatal(err)
   }
 
+  servers := ""
   for hostname, port := range agents {
     line := hostname + ":" + strconv.FormatUint(port, 10) + "\n"
     f.Write([]byte(line))
+
+    servers = hostname + " " + servers
   }
 
   f.Close()
@@ -50,7 +56,8 @@ func triggerAgents(chapel_program []string, agents map[string]uint64) {
 
   cmd.Env = os.Environ()
   cmd.Env = append(cmd.Env, "SSH_CMD=./chapel-client")
-  cmd.Env = append(cmd.Env, "SSH_OPTIONS=" + f.Name())
+  cmd.Env = append(cmd.Env, "SSH_OPTIONS=" + f.Name() + " " + chapel_program[0] + "_real")
+  cmd.Env = append(cmd.Env, "SSH_SERVERS=" + servers)
 
   if err := cmd.Run(); err != nil {
     log.Fatal(err)
@@ -67,10 +74,8 @@ func main() {
   agents := make(map[string]uint64)
   saturated := false
 
-  pwd, _ := os.Getwd()
-
   master := flag.String("master", "localhost:5050", "Location of leading Mesos master")
-  bootstrap := flag.String("bootstrap", pwd + "/chapel-bootstrap.tgz", "Location of bootstrap package")
+  namenode := flag.String("name-node", "localhost", "Location of bootstrap package and executables")
   locales := flag.Int("locales", 1, "Number of Chapel locales i.e. number of nodes")
   flag.Parse()
   chapel_program := flag.Args()
@@ -120,11 +125,15 @@ func main() {
 
           agents[*offer.Hostname] = port
 
+          bootstrap := *namenode + "/chapel/chapel-bootstrap.tgz"
+          target := *namenode + "/chapel/" + chapel_program[0] + "_real"
+
           command := &mesos.CommandInfo {
-            Value: proto.String("./bin/chapel-agent -port=" + strconv.FormatUint(port, 10)),
             Uris:  []*mesos.CommandInfo_URI {
-              &mesos.CommandInfo_URI { Value: bootstrap },
+              &mesos.CommandInfo_URI { Value: &bootstrap },
+              &mesos.CommandInfo_URI { Value: &target },
             },
+            Value: proto.String("./bin/chapel-agent -port=" + strconv.FormatUint(port, 10)),
           }
 
           taskId++
@@ -156,11 +165,12 @@ func main() {
           }
         } else if (*status.State == mesos.TaskState_TASK_RUNNING) {
           runningLocales++
-          if runningLocales >= *locales {
-            saturated = true
-            go triggerAgents(chapel_program, agents)
-          } else {
+          if !saturated {
             fmt.Println("[" , runningLocales , "/" , *locales , "] Setting up locale..")
+            if runningLocales >= *locales {
+              saturated = true
+              triggerAgents(chapel_program, agents)
+            }
           }
         } else {
           fmt.Println("Received task status: " + mesos.TaskState_name[int32(*status.State)])

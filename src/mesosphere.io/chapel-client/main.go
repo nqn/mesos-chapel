@@ -10,12 +10,13 @@ import (
 )
 
 func main() {
-  if len(os.Args) < 3 {
-    fmt.Println("usage <client file> <client> <arguments>")
+  if len(os.Args) < 4 {
+    fmt.Println("usage <client file> <client> <target> <arguments>")
     os.Exit(1)
   }
 
-  selected_hostname := os.Args[2]
+  target := os.Args[2]
+  selected_hostname := os.Args[3]
   client := ""
 
   f, _ := os.Open(os.Args[1])
@@ -41,14 +42,13 @@ func main() {
     os.Exit(1)
   }
 
-  fmt.Println("Connecting to " + client)
   conn, err := net.Dial("tcp", client)
   if err != nil {
    log.Fatal(err)
   }
 
   pwd, _ := os.Getwd()
-  buf := []byte("mkdir -p " + pwd + ";"  + strings.Join(os.Args[3:], " "))
+  buf := []byte(pwd + "?" + target + "? mkdir -p " + pwd + ";"  + strings.Join(os.Args[4:], " "))
   _, err = conn.Write(buf)
   if err != nil {
    log.Fatal(err)

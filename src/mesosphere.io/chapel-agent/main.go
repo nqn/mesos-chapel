@@ -35,7 +35,23 @@ func main() {
     log.Fatal(err)
   }
 
-  cmds := []string { "sh", "-c", string(buf[:n]) }
+  str := string(buf[:n])
+  split := strings.Split(str, "?")
+
+  fmt.Println("Query:" + str)
+  fmt.Println("Cmd:" + split[2])
+  fmt.Println("Destination:" + split[0])
+  fmt.Println("Target program:" + split[1])
+
+  os.Mkdir(split[0], 0700)
+
+  pwd, _ := os.Getwd()
+  err = os.Symlink(pwd + "/" + split[1], split[0] + "/" + split[1])
+  if err != nil {
+    fmt.Println(err)
+  }
+  
+  cmds := []string { "sh", "-c", split[2] }
 
   fmt.Println("Cmd: " + strings.Join(cmds, " "))
 

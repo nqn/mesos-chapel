@@ -1,6 +1,6 @@
-all: examples
+all: pack
 
-.PHONY : clean c-bridge check_mesos check_proto_headers
+.PHONY : clean c-bridge check_mesos check_proto_headers pack
 c-bridge:
 	cd c-bridge; make all
 
@@ -21,11 +21,12 @@ protos:
 	go get code.google.com/p/goprotobuf/proto
 	go get code.google.com/p/goprotobuf/protoc-gen-go
 
-examples: check_proto_headers check_mesos protos c-bridge
-	go install mesos.apache.org/example_framework
-	go install mesos.apache.org/example_executor
+chapel: check_proto_headers check_mesos protos c-bridge
+	go install mesosphere.io/chapel
+	go install mesosphere.io/chapel-agent
+	go install mesosphere.io/chapel-client
 
-pack:
+pack: chapel
 	tar -cvzf chapel-bootstrap.tgz bin/chapel-agent
 
 clean:
